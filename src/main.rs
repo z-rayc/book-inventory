@@ -15,3 +15,22 @@ impl Book {
         }
     }
 }
+
+#[derive(Debug)]
+struct Library {
+    books: Vec<Book>,
+}
+
+impl Library {
+    // Create a new library
+    fn new() -> Library {
+        Library {
+            books: Vec::<Book>::new(),
+        }
+    }
+
+    // Add a book to the library
+    fn add_book(&mut self, book: Book) {
+        self.books.push(book);
+    }
+}
