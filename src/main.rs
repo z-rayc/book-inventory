@@ -44,4 +44,15 @@ impl Library {
         None
     }
 
+fn main() {
+    // Create objects
+    let mut library = Library::new();
+    let book = Book::new("Harry Potter".to_string(), 2002, "F34".to_string());
+
+    // Add book to library
+    library.add_book(book);
+
+    // Remove book from library
+    library.remove_book("F34".to_string());
+    println!("{:?}", &library);
 }
