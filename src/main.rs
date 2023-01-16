@@ -33,4 +33,15 @@ impl Library {
     fn add_book(&mut self, book: Book) {
         self.books.push(book);
     }
+
+    // Find a reference to a book from its code
+    fn find_book(&mut self, code: String) -> Option<&Book> {
+        for item in self.books.iter() {
+            if (item).code == code {
+                return Some(&item);
+            }
+        }
+        None
+    }
+
 }
