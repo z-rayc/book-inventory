@@ -171,27 +171,36 @@ fn get_user_number() -> u16 {
 fn add_user_book(library: &mut Library) {
     println!("\nAdd a book");
     print_line();
+
     print!("Enter the title: ");
     io::stdout().flush().unwrap();
     let mut title = String::new();
-
     io::stdin()
         .read_line(&mut title)
-        .expect("Word not recognised. Try again.");
+        .expect("Word not recognised.");
 
     print!("Enter the author: ");
     io::stdout().flush().unwrap();
     let mut author = String::new();
-
     io::stdin()
         .read_line(&mut author)
-        .expect("Word not recognised. Try again.");
+        .expect("Word not recognised.");
 
     print!("Enter the year: ");
     io::stdout().flush().unwrap();
     let year = get_user_number();
 
     library.add_book(title, author, year);
+}
+
+fn remove_user_book(library: &mut Library) {
+    println!("\nRemove a book");
+    print_line();
+    print!("Enter the ID: ");
+    io::stdout().flush().unwrap();
+
+    let mut book_id = get_user_number();
+    library.remove_book(book_id);
 }
 
 fn show_menu() {
@@ -221,13 +230,8 @@ fn show_text_interface_loop(library: &mut Library) {
                 println!("Exiting the application. Goodbye.");
                 running = false;
             }
-            1 => {
-                // TODO: Add book
-                add_user_book(library);
-            }
-            2 => {
-                // TODO: Remove book
-            }
+            1 => add_user_book(library),
+            2 => remove_user_book(library),
             3 => {
                 // TODO: Find book by title
             }
