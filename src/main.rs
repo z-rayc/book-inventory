@@ -168,7 +168,7 @@ fn get_user_number() -> u16 {
     }
 }
 
-fn add_user_book(library: &mut Library) {
+fn user_add_book(library: &mut Library) {
     println!("\nAdd a book");
     print_line();
 
@@ -193,7 +193,7 @@ fn add_user_book(library: &mut Library) {
     library.add_book(title, author, year);
 }
 
-fn remove_user_book(library: &mut Library) {
+fn user_remove_book(library: &mut Library) {
     println!("\nRemove a book");
     print_line();
     print!("Enter the ID: ");
@@ -230,8 +230,8 @@ fn show_text_interface_loop(library: &mut Library) {
                 println!("Exiting the application. Goodbye.");
                 running = false;
             }
-            1 => add_user_book(library),
-            2 => remove_user_book(library),
+            1 => user_add_book(library),
+            2 => user_remove_book(library),
             3 => {
                 // TODO: Find book by title
             }
