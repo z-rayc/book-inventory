@@ -199,8 +199,37 @@ fn user_remove_book(library: &mut Library) {
     print!("Enter the ID: ");
     io::stdout().flush().unwrap();
 
-    let mut book_id = get_user_number();
+    let book_id = get_user_number();
     library.remove_book(book_id);
+}
+
+fn user_get_books_by_string(library: &mut Library, x: String) -> Vec<&Book> {
+    println!("\nFind books by {}", x);
+    print_line();
+    print!("Enter the {}: ", x);
+    io::stdout().flush().unwrap();
+
+    let mut s = String::new();
+    io::stdin().read_line(&mut s).expect("Word not recognised.");
+
+    let title = "title".to_string();
+    let author = "author".to_string();
+
+    match x {
+        title => {
+            println!("Finding book by title...");
+            return library.get_books_by_title(s);
+        }
+        author => return library.get_books_by_author(s),
+    }
+}
+
+fn user_get_books_by_title(library: &mut Library) -> Vec<&Book> {
+    return user_get_books_by_string(library, "title".to_string());
+}
+
+fn user_get_books_by_author(library: &mut Library) -> Vec<&Book> {
+    return user_get_books_by_string(library, "author".to_string());
 }
 
 fn show_menu() {
@@ -214,8 +243,9 @@ fn show_menu() {
     println!("5. Find book by ID");
     println!("6. Borrow a book");
     println!("7. Return a borrowed book");
+    println!("8. List all books");
 
-    println!("\nPlease enter a number between 0 and 7.\n");
+    println!("\nPlease enter a number between 0 and 8.\n");
 }
 
 fn show_text_interface_loop(library: &mut Library) {
@@ -232,12 +262,8 @@ fn show_text_interface_loop(library: &mut Library) {
             }
             1 => user_add_book(library),
             2 => user_remove_book(library),
-            3 => {
-                // TODO: Find book by title
-            }
-            4 => {
-                // TODO: Find book by author
-            }
+            3 => print_book_list(user_get_books_by_title(library)),
+            4 => print_book_list(user_get_books_by_author(library)),
             5 => {
                 // TODO: Find book by ID
             }
@@ -247,6 +273,7 @@ fn show_text_interface_loop(library: &mut Library) {
             7 => {
                 // TODO: Return book
             }
+            8 => library.print_books(),
             _ => println!("Input not recognised. Try again.\n"),
         }
     }
