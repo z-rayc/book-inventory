@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::io;
 use std::io::Write; // For flush
 
+type BookId = u16;
+
 #[derive(PartialEq, Debug)]
 struct Book {
     book_id: BookId,
@@ -11,8 +13,8 @@ struct Book {
     available: bool,
 }
 
-type BookId = u16;
 const HR_DIV: &str = "-------------------------";
+
 fn print_line() {
     println!("{}", HR_DIV.to_string());
 }
@@ -71,7 +73,7 @@ impl Library {
     }
 
     // Returns a reference to the book with the given ID
-    fn get_book_by_code(&mut self, id: BookId) -> Option<&mut Book> {
+    fn get_book_by_id(&mut self, id: BookId) -> Option<&mut Book> {
         self.books.get_mut(&id)
     }
 
@@ -95,25 +97,15 @@ impl Library {
         books_by_author
     }
 
-    // Get the number of books in the library
-    fn get_books_size(&self) -> usize {
-        self.books.len()
-    }
-
     // Remove the book with the given ID from the library
     fn remove_book(&mut self, id: BookId) -> bool {
-        let found = self.get_book_by_code(id);
+        let found = self.get_book_by_id(id);
         match found {
             Some(_) => {
                 self.books.remove(&id);
-                println!("The book with ID {} was successfully removed.", id);
-                self.id_counter -= 1;
                 true
             }
-            None => {
-                println!("The book was not found. ");
-                false
-            }
+            None => false,
         }
     }
 
@@ -156,7 +148,7 @@ fn get_user_number() -> u16 {
         // Get user input
         io::stdin()
             .read_line(&mut input)
-            .expect("Number not recognised. Try again.");
+            .expect("Number not recognised.");
 
         // Parse input to integer
         let input: u16 = match input.trim().parse() {
@@ -169,58 +161,63 @@ fn get_user_number() -> u16 {
 }
 
 fn user_add_book(library: &mut Library) {
-    println!("\nAdd a book");
-    print_line();
-
     print!("Enter the title: ");
     io::stdout().flush().unwrap();
-    let mut title = String::new();
-    io::stdin()
-        .read_line(&mut title)
-        .expect("Word not recognised.");
+    let title = get_user_string();
 
     print!("Enter the author: ");
     io::stdout().flush().unwrap();
-    let mut author = String::new();
-    io::stdin()
-        .read_line(&mut author)
-        .expect("Word not recognised.");
+    let author = get_user_string();
 
     print!("Enter the year: ");
     io::stdout().flush().unwrap();
     let year = get_user_number();
 
     library.add_book(title, author, year);
+    println!("Book added to library.")
 }
 
 fn user_remove_book(library: &mut Library) {
-    println!("\nRemove a book");
-    print_line();
     print!("Enter the ID: ");
     io::stdout().flush().unwrap();
 
     let book_id = get_user_number();
-    library.remove_book(book_id);
+    let removed = library.remove_book(book_id);
+
+    match removed {
+        true => println!("The book with ID {} was successfully removed.", book_id),
+        false => println!("The book was not found."),
+    }
 }
 
-fn user_get_books_by_string(library: &mut Library, x: String) -> Vec<&Book> {
-    println!("\nFind books by {}", x);
-    print_line();
-    print!("Enter the {}: ", x);
-    io::stdout().flush().unwrap();
-
+fn get_user_string() -> String {
     let mut s = String::new();
     io::stdin().read_line(&mut s).expect("Word not recognised.");
 
-    let title = "title".to_string();
-    let author = "author".to_string();
+    // Remove trailing \r\n or \n
+    s.as_str()
+        .strip_suffix("\r\n")
+        .or(s.strip_suffix("\n"))
+        .unwrap_or(&s);
 
-    match x {
-        title => {
-            println!("Finding book by title...");
-            return library.get_books_by_title(s);
-        }
-        author => return library.get_books_by_author(s),
+    s.to_string()
+}
+
+fn user_get_books_by_string(library: &mut Library, x: String) -> Vec<&Book> {
+    print!("Enter the {}: ", x);
+    io::stdout().flush().unwrap();
+
+    let s = get_user_string();
+
+    /* let title = "title";
+    let author = "author"; */
+
+    if x == "title".to_string() {
+        library.get_books_by_title(s)
+    } else if x == "author".to_string() {
+        library.get_books_by_author(s)
+    } else {
+        Vec::new()
     }
 }
 
@@ -232,8 +229,17 @@ fn user_get_books_by_author(library: &mut Library) -> Vec<&Book> {
     return user_get_books_by_string(library, "author".to_string());
 }
 
+fn user_get_book_by_id(library: &mut Library) -> Option<&mut Book> {
+    print_line();
+    print!("Enter the ID: ");
+    io::stdout().flush().unwrap();
+
+    let id = get_user_number();
+    library.get_book_by_id(id)
+}
+
 fn show_menu() {
-    println!("\nMenu");
+    println!("\n### Menu ###");
     print_line();
     println!("0. Quit");
     println!("1. Add a book");
@@ -260,18 +266,63 @@ fn show_text_interface_loop(library: &mut Library) {
                 println!("Exiting the application. Goodbye.");
                 running = false;
             }
-            1 => user_add_book(library),
-            2 => user_remove_book(library),
-            3 => print_book_list(user_get_books_by_title(library)),
-            4 => print_book_list(user_get_books_by_author(library)),
+            1 => {
+                println!("\n### Add a book ###");
+                print_line();
+                user_add_book(library)
+            }
+            2 => {
+                println!("\n### Remove a book ###");
+                print_line();
+                user_remove_book(library)
+            }
+            3 => {
+                println!("\n### Find books by title ###");
+                print_line();
+                print_book_list(user_get_books_by_title(library))
+            }
+            4 => {
+                println!("\n### Find books by author ###");
+                print_line();
+                print_book_list(user_get_books_by_author(library))
+            }
             5 => {
-                // TODO: Find book by ID
+                println!("\n### Find book by ID ###");
+                let book = user_get_book_by_id(library);
+                match book {
+                    Some(b) => b.print_info(),
+                    None => println!("Could not find the book with the given ID."),
+                }
             }
             6 => {
-                // TODO: Borrow book
+                println!("\n### Borrow book by ID ###");
+                let book = user_get_book_by_id(library);
+                match book {
+                    Some(b) => {
+                        if b.available == true {
+                            b.borrow_book();
+                            println!("The book was successfully borrowed.")
+                        } else {
+                            println!("The book could not be borrowed, because it is unavailable.")
+                        }
+                    }
+                    None => println!("Could not find the book to borrow."),
+                }
             }
             7 => {
-                // TODO: Return book
+                println!("\n### Return book by ID ###");
+                let book = user_get_book_by_id(library);
+                match book {
+                    Some(b) => {
+                        if b.available == false {
+                            b.return_book();
+                            println!("The book was successfully returned.")
+                        } else {
+                            println!("The book could not be returned, because it was not borrowed.")
+                        }
+                    }
+                    None => println!("Could not find the book to return."),
+                }
             }
             8 => library.print_books(),
             _ => println!("Input not recognised. Try again.\n"),
